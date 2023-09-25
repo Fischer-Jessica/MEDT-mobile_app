@@ -1,6 +1,6 @@
 <ion-header>
     <ion-toolbar>
-        <ion-title>Overview</ion-title>
+        <ion-title>Fischers - Overview</ion-title>
     </ion-toolbar>
 </ion-header>
 
@@ -18,7 +18,7 @@
     </ion-searchbar>
 
     <ion-list>
-        <ion-list-header>Projects</ion-list-header>
+        <ion-list-header>All Projects</ion-list-header>
 
         <ion-item-group *ngIf="filteredNavigationLinks.length > 0">
             <ion-item *ngFor="let navigationLink of filteredNavigationLinks" [routerLink]="navigationLink.routerLink">
