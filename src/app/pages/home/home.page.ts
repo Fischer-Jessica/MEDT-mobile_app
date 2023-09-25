@@ -18,6 +18,11 @@ export class HomePage {
                 title: 'WebGL Square',
                 icon: 'square',
                 routerLink: '/web-gl-square-page'
+            },
+            {
+              title: 'Three Js Cube',
+              icon: 'square',
+              routerLink: '/three-js-cube'
             }
         ];
         this.filteredNavigationLinks = this.navigationLinks;

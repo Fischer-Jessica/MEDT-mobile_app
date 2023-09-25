@@ -1,5 +1,6 @@
 import {NgModule} from '@angular/core';
 import {PreloadAllModules, RouterModule, Routes} from '@angular/router';
+import {ThreeJsCubeComponent} from "./components/three-js-cube/three-js-cube.component";
 
 const routes: Routes = [
     {
@@ -14,6 +15,10 @@ const routes: Routes = [
     {
         path: 'web-gl-square-page',
         loadChildren: () => import('./pages/web-gl-square-page/web-gl-square-page.module').then(m => m.WebGLSquarePagePageModule)
+    },
+    {
+      path: 'three-js-cube',
+      component: ThreeJsCubeComponent
     }
 ];
 
