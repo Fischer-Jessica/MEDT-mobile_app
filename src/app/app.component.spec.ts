@@ -1,21 +1,19 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {AppComponent} from './app.component';
 
-import { AppComponent } from './app.component';
+describe('AppComponent', (): void => {
 
-describe('AppComponent', () => {
+    beforeEach(async (): Promise<void> => {
+        await TestBed.configureTestingModule({
+            declarations: [AppComponent],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+        }).compileComponents();
+    });
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [AppComponent],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    }).compileComponents();
-  });
-
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
+    it('should create the app', (): void => {
+        const fixture: ComponentFixture<AppComponent> = TestBed.createComponent(AppComponent);
+        const app: AppComponent = fixture.componentInstance;
+        expect(app).toBeTruthy();
+    });
 });
