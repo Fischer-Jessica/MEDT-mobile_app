@@ -1,23 +1,21 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import * as THREE from "three";
 import {
-  BoxGeometry,
-  BufferGeometry, Float32BufferAttribute,
+  BufferGeometry,
   Mesh,
   MeshBasicMaterial,
   Object3DEventMap,
   PerspectiveCamera,
-  Scene, Texture,
+  Scene,
   WebGLRenderer
 } from "three";
-import {animate} from "@angular/animations";
 
 @Component({
   selector: 'app-heightmap',
   templateUrl: './heightmap.component.html',
   styleUrls: ['./heightmap.component.scss'],
 })
-export class HeightmapComponent  implements OnInit, AfterViewInit {
+export class HeightmapComponent implements OnInit, AfterViewInit {
 
   @ViewChild('threeCanvas')
   private canvasRef!: ElementRef;
@@ -26,8 +24,7 @@ export class HeightmapComponent  implements OnInit, AfterViewInit {
   private renderer!: WebGLRenderer;
   private map!: Mesh<BufferGeometry, MeshBasicMaterial, Object3DEventMap>;
 
-
-  constructor() { }
+  constructor() {}
 
   ngOnInit() {}
 
@@ -38,29 +35,30 @@ export class HeightmapComponent  implements OnInit, AfterViewInit {
 
   private createScene() {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvasRef.nativeElement });
-    this.renderer.setSize( window.innerWidth, window.innerHeight );
+    this.renderer = new THREE.WebGLRenderer({canvas: this.canvasRef.nativeElement});
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     const loader = new THREE.TextureLoader();
-    loader.load('assets/texture/Heightmap.png', (texture) => this.onTextureLoaded(texture));
+    loader.load('assets/texture/Heightmap.png', (texture) => this.onTextureLoaded(texture))
 
-    this.camera.position.x = 16;
-    this.camera.position.y = 32;
-    this.camera.position.z = 16;
-    this.camera.lookAt(16, 0, 16);
+    this.camera.position.x = 25;
+    this.camera.position.y = 20;
+    this.camera.position.z = 40;
+    this.camera.lookAt(15, -20, 0);
   }
 
   private render(delay: DOMHighResTimeStamp) {
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.camera)
 
-    requestAnimationFrame((delay) => this.render(delay));
+    requestAnimationFrame((delay) => this.render(delay))
   }
 
   private generateTerrain(imagedata: ImageData) {
     // Autocompletion heißt, dass es 4x bis 255 gibt, auf Farben angepasst
-    console.log(`imageData -> width: ${imagedata.width}, height: ${imagedata.height}, data.length: ${imagedata.data.length}`);
+    console.log(`imageData -> width: ${imagedata.width}, height: ${imagedata.height}, data.length: ${imagedata.data.length}`)
+    console.log(imagedata.data)
 
     const indices: number[] = [];
     const vertices: number[] = [];
@@ -68,22 +66,34 @@ export class HeightmapComponent  implements OnInit, AfterViewInit {
 
     for (let z = 0; z < imagedata.height; z++) {
       for (let x = 0; x < imagedata.width; x++) {
-        vertices.push(x, 0, z);
-        colours.push(1, 1, 1, 1);
+        const pixelIndex = z * imagedata.width + x;
+        const y = imagedata.data[pixelIndex * 4]
+        vertices.push(x, y * 0.01, z)
+
+        if (y < 128) {
+          colours.push(0.41287, 0.32182, 0.25979, 1)
+        } else if (y > 128 && y < 204.8) {
+          colours.push(0.55153, 0.71476, 0.25920, 1)
+        } else if (y > 204.8) {
+          colours.push(1, 1, 1, 1)
+        }
+
+        if (z < imagedata.height - 1 && x < imagedata.width - 1) {
+          const tl: number = pixelIndex;
+          const tr: number = tl + 1;
+          const bl: number = (z + 1) * imagedata.width + x;
+          const br: number = bl + 1;
+
+          indices.push(tl, bl, tr)
+          indices.push(bl, tr, br)
+        }
       }
     }
 
-    // ccw ... counter clock wise
-    indices.push(32); // von der width ablesen
-    indices.push(0); // increases by 1
-    indices.push(0 + 1);
-
-    // Wie muss ich das angehen jetzt sollte ein dreieck da sein die drei Zeilen müssen Schleife
-
-    const geometry = new THREE.BufferGeometry( );
+    const geometry = new THREE.BufferGeometry();
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colours), 4));
+    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colours), 4))
 
     const material = new THREE.MeshBasicMaterial();
     material.vertexColors = true;
@@ -93,7 +103,7 @@ export class HeightmapComponent  implements OnInit, AfterViewInit {
     this.scene.add( this.map );
   }
 
-  private onTextureLoaded(texture: Texture) {
+  private onTextureLoaded(texture: THREE.Texture) {
     console.log('texture loaded');
 
     const canvas = document.createElement('canvas');
@@ -104,7 +114,6 @@ export class HeightmapComponent  implements OnInit, AfterViewInit {
     context.drawImage(texture.image, 0, 0);
 
     const data = context.getImageData(0, 0, canvas.width, canvas.height);
-
     console.log(data);
 
     this.generateTerrain(data);
