@@ -23,6 +23,11 @@ export class HomePage {
               title: 'Three Js Cube',
               icon: 'square',
               routerLink: '/three-js-cube'
+            },
+            {
+              title: 'Heightmap',
+              icon: 'square',
+              routerLink: '/heightmap'
             }
         ];
         this.filteredNavigationLinks = this.navigationLinks;
