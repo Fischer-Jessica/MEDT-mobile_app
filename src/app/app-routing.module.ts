@@ -2,6 +2,7 @@ import {NgModule} from '@angular/core';
 import {PreloadAllModules, RouterModule, Routes} from '@angular/router';
 import {ThreeJsCubeComponent} from "./components/three-js-cube/three-js-cube.component";
 import {HeightmapComponent} from "./components/heightmap/heightmap.component";
+import {NormalmapComponent} from "./components/normalmap/normalmap.component";
 
 const routes: Routes = [
     {
@@ -24,6 +25,10 @@ const routes: Routes = [
     {
       path: 'heightmap',
       component: HeightmapComponent
+    },
+    {
+      path: 'normal-map',
+      component: NormalmapComponent
     }
 ];
 

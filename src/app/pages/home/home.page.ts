@@ -28,6 +28,11 @@ export class HomePage {
               title: 'Heightmap',
               icon: 'square',
               routerLink: '/heightmap'
+            },
+            {
+              title: 'Normalmap',
+              icon: 'square',
+              routerLink: '/normal-map'
             }
         ];
         this.filteredNavigationLinks = this.navigationLinks;
