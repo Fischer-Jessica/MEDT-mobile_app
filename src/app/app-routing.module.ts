@@ -3,6 +3,7 @@ import {PreloadAllModules, RouterModule, Routes} from '@angular/router';
 import {ThreeJsCubeComponent} from "./components/three-js-cube/three-js-cube.component";
 import {HeightmapComponent} from "./components/heightmap/heightmap.component";
 import {NormalmapComponent} from "./components/normalmap/normalmap.component";
+import {LightningComponent} from "./lightning/lightning.component";
 
 const routes: Routes = [
     {
@@ -29,6 +30,10 @@ const routes: Routes = [
     {
       path: 'normal-map',
       component: NormalmapComponent
+    },
+    {
+      path: 'lightning',
+      component: LightningComponent
     }
 ];
 

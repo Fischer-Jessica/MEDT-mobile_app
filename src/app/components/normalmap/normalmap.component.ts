@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
 import {
-  Color,
+  AxesHelper,
+  Color, GridHelper,
   Mesh,
   MeshPhongMaterial,
   PerspectiveCamera,
@@ -34,17 +35,21 @@ export class NormalmapComponent  implements AfterViewInit {
     this.scene = new Scene();
     this.scene.background = new Color(Color.NAMES.white);
 
-    this.light = new PointLight(0xffffff, 200);
-    this.light.position.set(0, 0, 10);
+    this.light = new PointLight(0xffffff, 1);
+    this.light.position.set(0, 10, 10);
     this.scene.add(this.light);
 
     this.camera = new PerspectiveCamera(75, this.canvasRef.nativeElement.width / this.canvasRef.nativeElement.height,
       0.1, 1000);
 
-    this.camera.position.set(0, -30, 0);
+    this.camera.position.set(0, 30, 0);
 
     const controls = new OrbitControls(this.camera, this.canvasRef.nativeElement)
 
+    const axisHelper = new AxesHelper(5);
+    this.scene.add(axisHelper);
+    const gridHelper = new GridHelper(20);
+    this.scene.add(gridHelper);
 
     this.renderer = new WebGLRenderer({canvas: this.canvasRef.nativeElement});
 
@@ -57,6 +62,7 @@ export class NormalmapComponent  implements AfterViewInit {
     material.normalScale. set(2, 2);
 
     const planeMesh = new Mesh(this.plane, material);
+    planeMesh.rotation.x = 180 * Math.PI / 180
     this.scene.add(planeMesh);
 
     requestAnimationFrame((total) => this.animate(total));
@@ -66,7 +72,7 @@ export class NormalmapComponent  implements AfterViewInit {
     const delay = (total - this.lastTime) / 1000;
 
     this.light.position.x += this.lightSourceSpeed * delay;
-    if (this.light.position > 5) {
+    if (this.light.position.x > 5) {
       this.lightSourceSpeed *= -1;
     } else if (this.light.position.x < -5) {
       this.lightSourceSpeed *= -1;

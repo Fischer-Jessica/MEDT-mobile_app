@@ -33,6 +33,11 @@ export class HomePage {
               title: 'Normalmap',
               icon: 'square',
               routerLink: '/normal-map'
+            },
+            {
+              title: 'Lightning',
+              icon: 'square',
+              routerLink: '/lightning'
             }
         ];
         this.filteredNavigationLinks = this.navigationLinks;
