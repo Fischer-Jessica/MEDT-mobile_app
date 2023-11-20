@@ -1,19 +1,26 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {
   AmbientLight,
-  AxesHelper, BoxGeometry, Color, DirectionalLight,
+  AxesHelper, BoxGeometry, CameraHelper, Color, DirectionalLight,
   GridHelper,
-  Mesh, MeshBasicMaterial,
+  Mesh,
   MeshPhongMaterial, MeshStandardMaterial,
-  PerspectiveCamera, PlaneGeometry, PointLight,
+  PerspectiveCamera, PlaneGeometry,
   Scene,
-  SphereGeometry, SpotLight,
+  SphereGeometry,
   WebGLRenderer
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {GUI} from "dat.gui";
+
+interface Options {
+  wireframeOfSphere: boolean;
+  colorOfSphere: string;
+  speedOfSphere: number;
+}
 
 @Component({
-  selector: 'lightning',
+  selector: 'app-lightning',
   templateUrl: './lightning.component.html',
   styleUrls: ['./lightning.component.scss'],
 })
@@ -25,6 +32,10 @@ export class LightningComponent implements AfterViewInit {
   private renderer!: WebGLRenderer;
   private controls!: OrbitControls;
   private directionallight!: DirectionalLight;
+  private sphere!: Mesh<SphereGeometry, MeshPhongMaterial>;
+  private sphere2!: Mesh<SphereGeometry, MeshPhongMaterial>;
+  private gui!: GUI;
+  private options!: Options;
 
   async ngAfterViewInit(): Promise<void> {
     this.scene = new Scene();
@@ -57,17 +68,17 @@ export class LightningComponent implements AfterViewInit {
     const geometry2 = new SphereGeometry(1, 32, 32)
     const material2 = new MeshPhongMaterial({color: 0xff0000, specular: Color.NAMES.white, shininess: 100 });
 
-    const sphere = new Mesh(geometry2, material2);
-    sphere.position.set(0, 1, 0);
-    sphere.castShadow = true;
-    sphere.receiveShadow = true;
-    this.scene.add(sphere);
+    this.sphere = new Mesh(geometry2, material2);
+    this.sphere.position.set(0, 0, 0);
+    this.sphere.castShadow = true;
+    this.sphere.receiveShadow = true;
+    this.scene.add(this.sphere);
 
-    const sphere2 = new Mesh(geometry2, material2);
-    sphere2.position.set(0, 2.5, 0);
-    sphere2.castShadow = true;
-    sphere2.receiveShadow = true;
-    this.scene.add(sphere2);
+    this.sphere2 = new Mesh(geometry2, material2);
+    this.sphere2.position.set(0, 2.5, 0);
+    this.sphere2.castShadow = true;
+    this.sphere2.receiveShadow = true;
+    this.scene.add(this.sphere2);
 
     //add AmbientLight
     const ambientlight = new AmbientLight(0xffffff, 0.05);
@@ -76,8 +87,11 @@ export class LightningComponent implements AfterViewInit {
     this.directionallight = new DirectionalLight(0xffffff, 1);
     this.directionallight.position.set(-10, 15, 0);
     this.directionallight.castShadow = true;
+    this.directionallight.shadow.camera.top = 10
     this.scene.add(this.directionallight);
 
+    const cameraHelper = new CameraHelper(this.directionallight.shadow.camera);
+    this.scene.add(cameraHelper);
 
     //add ground plane
     const groundGeometry = new PlaneGeometry(20, 20);
@@ -88,11 +102,35 @@ export class LightningComponent implements AfterViewInit {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    requestAnimationFrame(() => this.animate());
+    this.initGui();
+
+    this.renderer.setAnimationLoop((delay) => this.animate(delay));
   }
 
-  private animate():void {
-    requestAnimationFrame(() => this.animate());
+  private initGui(): void {
+    this.gui = new GUI();
+
+    this.options = {
+      wireframeOfSphere: false,
+      colorOfSphere: `#${this.sphere.material.color.getHexString()}`,
+    speedOfSphere: 0.5,
+  };
+
+    this.gui.add(this.options, 'wireframeOfSphere').onChange((value) => {
+      this.sphere.material.wireframe = value;
+    });
+
+    this.gui.addColor(this.options, 'colorOfSphere').onChange((color) => {
+      this.sphere.material.color.set(color);
+    });
+
+    this.gui.add(this.options, 'speedOfSphere', 0, 1);
+    this.gui.add(this.sphere.position, 'x', -3, 3)
+  }
+
+  private animate(delay: DOMHighResTimeStamp):void {
+
+    this.sphere.position.y += 0.1 * Math.sin(delay/1000 * this.options.speedOfSphere);
     this.controls.update()
     this.renderer.render(this.scene, this.camera);
   }
