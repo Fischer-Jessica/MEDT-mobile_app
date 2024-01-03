@@ -5,9 +5,9 @@ import {
   GridHelper,
   Mesh,
   MeshPhongMaterial, MeshStandardMaterial,
-  PerspectiveCamera, PlaneGeometry,
+  PerspectiveCamera, PlaneGeometry, Raycaster,
   Scene,
-  SphereGeometry,
+  SphereGeometry, Vector2,
   WebGLRenderer
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
@@ -36,6 +36,8 @@ export class LightningComponent implements AfterViewInit {
   private sphere2!: Mesh<SphereGeometry, MeshPhongMaterial>;
   private gui!: GUI;
   private options!: Options;
+  private mousePosition!: Vector2;
+  private rayCaster!: Raycaster;
 
   async ngAfterViewInit(): Promise<void> {
     this.scene = new Scene();
@@ -104,6 +106,15 @@ export class LightningComponent implements AfterViewInit {
 
     this.initGui();
 
+    this.mousePosition = new Vector2();
+
+    window.addEventListener('mousemove', (event) => {
+      this.mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1;
+      this.mousePosition.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    });
+
+    this.rayCaster = new Raycaster();
+
     this.renderer.setAnimationLoop((delay) => this.animate(delay));
   }
 
@@ -129,9 +140,22 @@ export class LightningComponent implements AfterViewInit {
   }
 
   private animate(delay: DOMHighResTimeStamp):void {
-
     this.sphere.position.y += 0.1 * Math.sin(delay/1000 * this.options.speedOfSphere);
     this.controls.update()
+
+    this.rayCaster.setFromCamera(this.mousePosition, this.camera);
+    const intersections = this.rayCaster.intersectObjects(this.scene.children);
+
+    if (intersections.find(x => x.object.id == this.sphere.id)) {
+      this.sphere.material.color.set(0x0000FF);
+    } else {
+      this.sphere.material.color.set(0xFF0000);
+    }
+
+    /*for (let i = 0; i < intersections.length; i++) {
+      console.log(intersections[i])
+    }*/
+
     this.renderer.render(this.scene, this.camera);
   }
 }

@@ -38,6 +38,11 @@ export class HomePage {
               title: 'Lightning',
               icon: 'square',
               routerLink: '/lightning'
+            },
+            {
+              title: 'Project',
+              icon: 'square',
+              routerLink: '/project'
             }
         ];
         this.filteredNavigationLinks = this.navigationLinks;
