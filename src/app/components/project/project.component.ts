@@ -24,7 +24,7 @@ export class ProjectComponent implements AfterViewInit {
   private renderer!: WebGLRenderer;
   private controls!: OrbitControls;
   private directionallight!: DirectionalLight;
-  private sphere!: Mesh<SphereGeometry, MeshStandardMaterial, Object3DEventMap>;
+  private sphere!: Mesh<SphereGeometry, MeshStandardMaterial>;
   private map!: Mesh<BufferGeometry, MeshBasicMaterial>;
   private mousePosition!: Vector2;
   private rayCaster!: Raycaster;
@@ -36,19 +36,19 @@ export class ProjectComponent implements AfterViewInit {
     this.initScene();
     this.addLights();
 
-    // Add sphere
-    const geometry2 = new SphereGeometry(1, 32, 32);
-    const material2 = new MeshStandardMaterial({color: 0xffff00});
+    // Creating a sphere which will be used as a light source
+    const lightBallGeometry = new SphereGeometry(1, 33, 33);
+    const lightBallMaterial = new MeshStandardMaterial({color: 0xffff00});
 
-    this.sphere = new Mesh(geometry2, material2);
+    this.sphere = new Mesh(lightBallGeometry, lightBallMaterial);
     this.sphere.position.set(-5, 15, 20);
     this.scene.add(this.sphere);
 
-    // Load heightmap texture
+    // Loading the heightmap texture which will be used as floor.
     const loader = new THREE.TextureLoader();
     loader.load('assets/project/Heightmap.png', (texture) => this.onTextureLoaded(texture));
 
-    // Create roof
+    // Creating the roof on which the bookshelf will be placed on.
     const roofGeometry = new PlaneGeometry(20, 20);
     const roofMaterial = new MeshPhongMaterial({color: 0xffffff});
     roofMaterial.map = await loader.loadAsync('assets/floor/everytexture.com-stock-wood-texture-00050.jpg');
@@ -74,7 +74,7 @@ export class ProjectComponent implements AfterViewInit {
         }
       });
 
-      // Move the positioning outside the traverse callback
+      // positioning the bookshelf and scaling it to fit the roof and the human
       model.position.set(10, 20.01, 8);
       model.scale.set(3, 3, 3);
       model.rotation.y = Math.PI;
@@ -86,14 +86,14 @@ export class ProjectComponent implements AfterViewInit {
     });
 
     // Load GLTF model (man.gltf)
-    const loaderg = new GLTFLoader();
-    loaderg.load('/assets/project/man.gltf', (gltf) => {
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load('/assets/project/man.gltf', (gltf) => {
       const model = gltf.scene;
-      model.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material = new MeshPhongMaterial({color: 0x8B0000, specular: 0xffffff, shininess: 100});
-          child.receiveShadow = true;
-          child.castShadow = true;
+      model.traverse((man) => {
+        if (man instanceof THREE.Mesh) {
+          man.material = new MeshPhongMaterial({color: 0x8B0000, specular: 0xffffff, shininess: 100});
+          man.receiveShadow = true;
+          man.castShadow = true;
         }
       });
       model.position.set(10, 8, 10);
@@ -101,10 +101,10 @@ export class ProjectComponent implements AfterViewInit {
       model.rotation.y = Math.PI / 2;
       this.scene.add(model);
 
-      // FBX files may contain a mixer with pre-defined animations
+      // animates the model through saving the animation of the model
       this.mixer = new THREE.AnimationMixer(model);
 
-      // Assuming the first animation is the one you want to play
+      // Assuming the first animation is the one you want to play and plays it
       const action = this.mixer.clipAction(gltf.animations[0]);
       action.play();
     }, (xhr) => {
@@ -113,14 +113,14 @@ export class ProjectComponent implements AfterViewInit {
       console.error('An error happened while loading the model', error);
     });
 
-    // Load another GLTF model (full_man.gltf)
-    loaderg.load('/assets/project/full_man.gltf', (gltf) => {
+    // Load another GLTF model (full_man.gltf) because the first one had an accident
+    gltfLoader.load('/assets/project/full_man.gltf', (gltf) => {
       const model = gltf.scene;
-      model.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material = new MeshPhongMaterial({color: 0x008B00, specular: 0xffffff, shininess: 100});
-          child.receiveShadow = true;
-          child.castShadow = true;
+      model.traverse((fullMan) => {
+        if (fullMan instanceof THREE.Mesh) {
+          fullMan.material = new MeshPhongMaterial({color: 0x008B00, specular: 0xffffff, shininess: 100});
+          fullMan.receiveShadow = true;
+          fullMan.castShadow = true;
         }
       });
       model.position.set(10, 20, 10);
@@ -146,14 +146,14 @@ export class ProjectComponent implements AfterViewInit {
     // this.addHelpers();
 
     this.mousePosition = new Vector2();
-
+    // if the mouse is moved mousePosition is updated
     window.addEventListener('mousemove', (event) => {
       this.mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1;
       this.mousePosition.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }, false);
 
+    // Raycaster is used to detect if the mouse is over the terrain
     this.rayCaster = new Raycaster();
-
     this.renderer.setAnimationLoop((delay) => this.animate(delay));
   }
 
@@ -161,10 +161,12 @@ export class ProjectComponent implements AfterViewInit {
     this.scene = new Scene();
     this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
     this.camera.position.set(2, 10, 2);
+    // renderer is used to render the scene, canvas is used to display the scene, and the size of the renderer is set to the size of the canvas
     this.renderer = new WebGLRenderer({canvas: this.canvasRef.nativeElement});
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
 
+    // clock is so that the animation happens, look into the animate function, controls are used to move the camera around the scene
     this.clock = new THREE.Clock();
     this.controls = new OrbitControls(this.camera, this.canvasRef.nativeElement);
     this.controls.update();
@@ -223,32 +225,32 @@ export class ProjectComponent implements AfterViewInit {
     const materialgreen = new THREE.MeshStandardMaterial({color: 0x00ff00});
     const materialorange = new THREE.MeshStandardMaterial({color: 0xffa500});
 
-    const cylinder1 = new THREE.Mesh(geometry, materialred);
-    cylinder1.position.set(2, 10, 2);
-    cylinder1.castShadow = true;
-    cylinder1.receiveShadow = true;
-    this.scene.add(cylinder1);
+    const pillar1 = new THREE.Mesh(geometry, materialred);
+    pillar1.position.set(2, 10, 2);
+    pillar1.castShadow = true;
+    pillar1.receiveShadow = true;
+    this.scene.add(pillar1);
 
-    const cylinder2 = new THREE.Mesh(geometry, materialgreen);
-    cylinder2.position.set(2, 10, 16);
-    cylinder2.castShadow = true;
-    cylinder2.receiveShadow = true;
-    this.scene.add(cylinder2);
+    const pillar2 = new THREE.Mesh(geometry, materialgreen);
+    pillar2.position.set(2, 10, 16);
+    pillar2.castShadow = true;
+    pillar2.receiveShadow = true;
+    this.scene.add(pillar2);
 
-    const cylinder3 = new THREE.Mesh(geometry, materialblue);
-    cylinder3.position.set(16, 10, 2);
-    cylinder3.castShadow = true;
-    cylinder3.receiveShadow = true;
-    this.scene.add(cylinder3);
+    const pillar3 = new THREE.Mesh(geometry, materialblue);
+    pillar3.position.set(16, 10, 2);
+    pillar3.castShadow = true;
+    pillar3.receiveShadow = true;
+    this.scene.add(pillar3);
 
-    const cylinder4 = new THREE.Mesh(geometry, materialorange);
-    cylinder4.position.set(16, 10, 16);
-    cylinder4.castShadow = true;
-    cylinder4.receiveShadow = true;
-    this.scene.add(cylinder4);
+    const pillar4 = new THREE.Mesh(geometry, materialorange);
+    pillar4.position.set(16, 10, 16);
+    pillar4.castShadow = true;
+    pillar4.receiveShadow = true;
+    this.scene.add(pillar4);
   }
 
-  private generateTerrain(imagedata: ImageData) {
+  private generateHeightmap(imagedata: ImageData) {
     // Generate 3D terrain based on heightmap image data
     console.log(`imageData -> width: ${imagedata.width}, height: ${imagedata.height}, data.length: ${imagedata.data.length}`);
     console.log(imagedata.data);
@@ -303,6 +305,7 @@ export class ProjectComponent implements AfterViewInit {
     this.scene.add(this.map);
   }
 
+  // Called when the texture is loaded. Converts the texture to image data and calls 'generateHeightmap'
   private onTextureLoaded(texture: THREE.Texture) {
     // Called when the texture is loaded. Converts the texture to image data and calls 'generateTerrain'
     console.log('texture loaded');
@@ -317,7 +320,7 @@ export class ProjectComponent implements AfterViewInit {
     const data = context.getImageData(0, 0, canvas.width, canvas.height);
     console.log(data);
 
-    this.generateTerrain(data);
+    this.generateHeightmap(data);
   }
 
   private animate(delay: DOMHighResTimeStamp): void {
