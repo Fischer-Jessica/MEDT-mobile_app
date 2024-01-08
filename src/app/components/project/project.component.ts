@@ -113,7 +113,7 @@ export class ProjectComponent implements AfterViewInit {
       console.error('An error happened while loading the model', error);
     });
 
-    // Load another GLTF model (full_man.gltf) because the first one had an accident
+    // Load another GLTF model (full_man.gltf) because the first one had an accident, that has been fixed
     gltfLoader.load('/assets/project/full_man.gltf', (gltf) => {
       const model = gltf.scene;
       model.traverse((fullMan) => {
@@ -160,7 +160,8 @@ export class ProjectComponent implements AfterViewInit {
   private initScene() {
     this.scene = new Scene();
     this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
-    this.camera.position.set(2, 10, 2);
+    this.camera.position.set(25, 30, 33);
+    this.camera.lookAt(10, 20, 10);
     // renderer is used to render the scene, canvas is used to display the scene, and the size of the renderer is set to the size of the canvas
     this.renderer = new WebGLRenderer({canvas: this.canvasRef.nativeElement});
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -291,6 +292,7 @@ export class ProjectComponent implements AfterViewInit {
       }
     }
 
+    // !!! Vertrude Vertice Normal - um Schatten auf der Heightmap darzustellen.
     // Create geometry and material for the terrain
     const geometry = new THREE.BufferGeometry();
     geometry.setIndex(indices);
@@ -326,14 +328,14 @@ export class ProjectComponent implements AfterViewInit {
   private animate(delay: DOMHighResTimeStamp): void {
     // Light movement
     this.directionallight.position.x += 0.1 * Math.sin(delay / 1000 * 0.5);
-    this.sphere.position.x += 0.1 * Math.sin(delay / 1000 * 0.5);
+    this.sphere.position.x = this.directionallight.position.x;
 
     // Animation
     if (this.mixer) {
       this.mixer.update(this.clock.getDelta());
     }
     if (this.mixer2) {
-      this.mixer2.update(this.clock.getDelta());
+      this.mixer2.update(this.clock.getDelta()*30);
     }
 
     // Raycaster and intersection logic
